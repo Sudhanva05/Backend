@@ -6,10 +6,7 @@ import (
 )
 
 // RegisterUserRoutes registers all user-related routes
-func RegisterUserRoutes(app *fiber.App) {
-
-	userHandler := handler.NewUserHandler()
-
+func RegisterUserRoutes(app *fiber.App, userHandler *handler.UserHandler) {
 	users := app.Group("/users")
 
 	users.Get("/", userHandler.GetUsers)

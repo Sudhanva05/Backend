@@ -3,6 +3,7 @@ package handler
 import (
 	"strconv"
 
+	db "github.com/Sudhanva05/Backend/db/sqlc"
 	"github.com/Sudhanva05/Backend/internal/models"
 	"github.com/Sudhanva05/Backend/internal/service"
 	"github.com/go-playground/validator/v10"
@@ -16,14 +17,14 @@ type UserHandler struct {
 }
 
 // NewUserHandler creates a new UserHandler
-func NewUserHandler() *UserHandler {
+func NewUserHandler(queries *db.Queries) *UserHandler {
 	return &UserHandler{
 		validate: validator.New(),
-		service:  service.NewUserService(),
+		service:  service.NewUserService(queries),
 	}
 }
 
-// GetUsers handles GET /users
+// GetUserByID handles GET /users/:id
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 
 	idParam := c.Params("id")
@@ -54,17 +55,21 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnprocessableEntity, err.Error())
 	}
 
-	// Delegate business logic to service
-	response := h.service.CreateUser(req)
+	response, err := h.service.CreateUser(req)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
 
 // GetUsers handles GET /users
-// GetUsers handles GET /users
 func (h *UserHandler) GetUsers(c *fiber.Ctx) error {
 
-	users := h.service.GetAllUsers()
+	users, err := h.service.GetAllUsers()
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
 
 	return c.JSON(users)
 }
